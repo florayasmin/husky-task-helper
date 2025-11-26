@@ -184,6 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <input type="checkbox" class="subtask-checkbox" data-index="${index}" ${checked} id="checkbox-${task.id}-${index}">
             <span class="subtask-text" contenteditable="true" data-index="${index}">${st.text}</span>
           </div>
+          <button class="subtask-delete-btn" data-index="${index}" title="Delete subtask">×</button>
         </li>
       `;
     }).join('');
@@ -267,6 +268,15 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
+    // Add subtask delete button listeners
+    taskCard.querySelectorAll('.subtask-delete-btn').forEach(deleteBtn => {
+      deleteBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const index = parseInt(deleteBtn.dataset.index);
+        deleteSubtask(task.id, index, taskCard);
+      });
+    });
+
     taskCard.querySelector('.delete-btn').addEventListener('click', () => {
       deleteTask(task.id);
       taskCard.remove();
@@ -332,6 +342,38 @@ document.addEventListener('DOMContentLoaded', () => {
           tasks[taskIndex].subtasks[subtaskIndex].text = newText;
         }
         chrome.storage.local.set({ tasks });
+      }
+    });
+  }
+
+  function deleteSubtask(taskId, subtaskIndex, taskCard) {
+    chrome.storage.local.get(['tasks'], (result) => {
+      const tasks = result.tasks || [];
+      const taskIndex = tasks.findIndex(t => t.id === taskId);
+      if (taskIndex !== -1 && tasks[taskIndex].subtasks && tasks[taskIndex].subtasks[subtaskIndex]) {
+        // Remove the subtask from the array
+        tasks[taskIndex].subtasks.splice(subtaskIndex, 1);
+        chrome.storage.local.set({ tasks });
+        
+        // Update the task in storage
+        const task = tasks[taskIndex];
+        
+        // Remove the subtask item from DOM
+        const subtaskItem = taskCard.querySelector(`.subtask-item:nth-child(${subtaskIndex + 1})`);
+        if (subtaskItem) {
+          subtaskItem.remove();
+        }
+        
+        // Update all remaining subtask indices in the DOM
+        taskCard.querySelectorAll('.subtask-item').forEach((item, newIndex) => {
+          const checkbox = item.querySelector('.subtask-checkbox');
+          const text = item.querySelector('.subtask-text');
+          const deleteBtn = item.querySelector('.subtask-delete-btn');
+          
+          if (checkbox) checkbox.dataset.index = newIndex;
+          if (text) text.dataset.index = newIndex;
+          if (deleteBtn) deleteBtn.dataset.index = newIndex;
+        });
       }
     });
   }

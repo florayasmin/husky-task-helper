@@ -225,6 +225,10 @@ button:active {
   padding: 8px 0;
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
   transition: opacity 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .subtask-item:last-child {
@@ -235,6 +239,8 @@ button:active {
   display: flex;
   align-items: flex-start;
   user-select: none;
+  flex: 1;
+  min-width: 0;
 }
 
 .subtask-checkbox {
@@ -274,6 +280,40 @@ button:active {
 
 .subtask-item.checked .subtask-text:hover {
   background-color: rgba(91, 45, 130, 0.03);
+}
+
+.subtask-delete-btn {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  margin: 0;
+  border: none;
+  border-radius: 4px;
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: all 0.2s ease;
+}
+
+.subtask-item:hover .subtask-delete-btn {
+  opacity: 1;
+}
+
+.subtask-delete-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  transform: scale(1.1);
+}
+
+.subtask-delete-btn:active {
+  transform: scale(0.95);
 }
 
 .subtask-item.checked .subtask-text {
