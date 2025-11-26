@@ -197,3 +197,13 @@ button:active {
   display: block;
   margin-bottom: 10px;
 }
+
+.husky-mascot {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  width: 100px;
+  height: auto;
+  opacity: 1;
+  pointer-events: none;
+}
