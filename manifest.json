@@ -4,7 +4,18 @@
   "version": "1.0",
   "description": "Break down your daily tasks into manageable subtasks",
   "action": {
-    "default_popup": "popup.html"
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "w.png",
+      "48": "w.png",
+      "128": "w.png"
+    }
   },
-  "permissions": ["storage"]
+  "icons": {
+    "16": "w.png",
+    "48": "w.png",
+    "128": "w.png"
+  },
+  "permissions": ["storage"],
+  "host_permissions": ["https://api.anthropic.com/*"]
 }

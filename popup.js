@@ -16,10 +16,15 @@ document.addEventListener('DOMContentLoaded', () => {
   // Load tasks from storage
   loadTasks();
 
-  addTaskBtn.addEventListener('click', () => {
+  addTaskBtn.addEventListener('click', async () => {
     const taskText = taskInput.value.trim();
-    if (taskText) {
-      const subtasks = generateSubtasks(taskText);
+    if (!taskText) return;
+
+    addTaskBtn.disabled = true;
+    addTaskBtn.textContent = 'Generating...';
+
+    try {
+      const subtasks = await generateSubtasks(taskText);
       const task = {
         id: Date.now(),
         title: taskText,
@@ -29,6 +34,11 @@ document.addEventListener('DOMContentLoaded', () => {
       saveTask(task);
       renderTask(task);
       taskInput.value = '';
+    } catch (error) {
+      alert('Error: ' + error.message);
+    } finally {
+      addTaskBtn.disabled = false;
+      addTaskBtn.textContent = 'break it down';
     }
   });
 
@@ -39,109 +49,44 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  function generateSubtasks(task) {
-    const taskLower = task.toLowerCase();
-
-    const patterns = {
-      write: [
-        'Research and gather relevant information',
-        'Create an outline with main points',
-        'Write the first draft',
-        'Review and edit for clarity',
-        'Proofread and finalize'
-      ],
-      study: [
-        'Gather all study materials',
-        'Review notes and highlight key concepts',
-        'Create summary flashcards',
-        'Practice with sample problems/questions',
-        'Take a short break, then do a final review'
-      ],
-      prepare: [
-        'List all requirements needed',
-        'Gather necessary materials',
-        'Set up your workspace',
-        'Do a practice run-through',
-        'Make final adjustments'
-      ],
-      create: [
-        'Brainstorm ideas and concepts',
-        'Sketch out initial design/plan',
-        'Build the core components',
-        'Add details and refinements',
-        'Review and polish the final product'
-      ],
-      organize: [
-        'Take inventory of what you have',
-        'Sort items into categories',
-        'Decide what to keep/remove',
-        'Arrange items in their places',
-        'Label and document the system'
-      ],
-      learn: [
-        'Find quality learning resources',
-        'Start with the fundamentals',
-        'Take notes on key concepts',
-        'Practice with hands-on exercises',
-        'Review and reinforce learning'
-      ],
-      plan: [
-        'Define your goals clearly',
-        'Research options and possibilities',
-        'List required steps and resources',
-        'Create a timeline with milestones',
-        'Review and adjust the plan'
-      ],
-      build: [
-        'Define requirements and scope',
-        'Design the architecture/structure',
-        'Implement core functionality',
-        'Test and debug thoroughly',
-        'Document and deploy'
-      ],
-      clean: [
-        'Clear out obvious clutter',
-        'Dust and wipe surfaces',
-        'Deep clean specific areas',
-        'Organize items in their places',
-        'Do a final walkthrough'
-      ],
-      email: [
-        'Clarify the purpose of the email',
-        'Draft the main message',
-        'Review tone and clarity',
-        'Proofread for errors',
-        'Send and follow up if needed'
-      ],
-      meeting: [
-        'Define the meeting agenda',
-        'Prepare necessary materials',
-        'Send invites with details',
-        'Set up the meeting space/link',
-        'Take notes and assign action items'
-      ],
-      project: [
-        'Define project scope and goals',
-        'Break down into milestones',
-        'Assign tasks and deadlines',
-        'Execute and track progress',
-        'Review and close out'
-      ]
-    };
-
-    for (const [keyword, tasks] of Object.entries(patterns)) {
-      if (taskLower.includes(keyword)) {
-        return tasks;
-      }
+  async function generateSubtasks(task) {
+    const apiKey = typeof ANTHROPIC_API_KEY !== 'undefined' ? ANTHROPIC_API_KEY : null;
+    if (!apiKey || apiKey === 'your-api-key-here') {
+      // Fallback to basic breakdown if no API key
+      return [
+        'Clarify what needs to be done',
+        'Gather any required resources',
+        'Start with the first small step',
+        'Work through the main portion',
+        'Review and complete the task'
+      ];
     }
 
-    return [
-      'Clarify what needs to be done',
-      'Gather any required resources',
-      'Start with the first small step',
-      'Work through the main portion',
-      'Review and complete the task'
-    ];
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 300,
+        messages: [{
+          role: 'user',
+          content: `Break down this task into 4-6 actionable subtasks. Return ONLY a JSON array of strings, no other text.\n\nTask: "${task}"`
+        }]
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error('API request failed');
+    }
+
+    const data = await response.json();
+    const text = data.content[0].text;
+    return JSON.parse(text);
   }
 
   function saveTask(task) {
