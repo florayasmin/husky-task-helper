@@ -1,1 +1,1 @@
-# claude-hackathon
+# husky-task-helper

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Husky Task Helper</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>My Tasks</h1>
+      <p class="date" id="currentDate"></p>
+    </header>
+    
+    <div class="input-section">
+      <textarea id="taskInput" placeholder="Enter a task (e.g., 'Write research paper on climate change')"></textarea>
+      <button id="addTask">break it down</button>
+    </div>
+    
+    <div class="tasks-section" id="tasksList">
+      <!-- Tasks will be rendered here -->
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
+

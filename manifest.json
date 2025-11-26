@@ -1,0 +1,10 @@
+{
+  "manifest_version": 3,
+  "name": "Husky Task Helper",
+  "version": "1.0",
+  "description": "Break down your daily tasks into manageable subtasks",
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "permissions": ["storage"]
+}
