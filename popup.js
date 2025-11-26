@@ -25,10 +25,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
       const subtasks = await generateSubtasks(taskText);
+      // Convert subtasks array to objects with checked state
+      const subtasksWithState = subtasks.map(text => ({
+        text: text,
+        checked: false
+      }));
       const task = {
         id: Date.now(),
         title: taskText,
-        subtasks: subtasks,
+        subtasks: subtasksWithState,
         date: today.toDateString()
       };
       saveTask(task);
@@ -104,6 +109,13 @@ document.addEventListener('DOMContentLoaded', () => {
       
       const todayTasks = tasks.filter(t => t.date === todayStr);
       
+      // Normalize legacy subtasks format
+      todayTasks.forEach(task => {
+        if (task.subtasks && task.subtasks.length > 0 && typeof task.subtasks[0] === 'string') {
+          task.subtasks = task.subtasks.map(text => ({ text: text, checked: false }));
+        }
+      });
+      
       if (todayTasks.length === 0) {
         tasksList.innerHTML = `
           <div class="empty-state">
@@ -126,7 +138,26 @@ document.addEventListener('DOMContentLoaded', () => {
     taskCard.className = 'task-card';
     taskCard.dataset.id = task.id;
 
-    const subtasksHtml = task.subtasks.map(st => `<li>${st}</li>`).join('');
+    // Ensure subtasks have the correct structure (handle legacy format)
+    const normalizedSubtasks = task.subtasks.map(st => {
+      if (typeof st === 'string') {
+        return { text: st, checked: false };
+      }
+      return st;
+    });
+
+    const subtasksHtml = normalizedSubtasks.map((st, index) => {
+      const checked = st.checked ? 'checked' : '';
+      const checkedClass = st.checked ? 'checked' : '';
+      return `
+        <li class="subtask-item ${checkedClass}">
+          <label class="subtask-label">
+            <input type="checkbox" class="subtask-checkbox" data-index="${index}" ${checked}>
+            <span class="subtask-text">${st.text}</span>
+          </label>
+        </li>
+      `;
+    }).join('');
 
     taskCard.innerHTML = `
       <div class="task-header">
@@ -135,6 +166,24 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
       <ul class="subtasks">${subtasksHtml}</ul>
     `;
+
+    // Add checkbox event listeners
+    taskCard.querySelectorAll('.subtask-checkbox').forEach(checkbox => {
+      checkbox.addEventListener('change', (e) => {
+        const index = parseInt(e.target.dataset.index);
+        const subtaskItem = e.target.closest('.subtask-item');
+        
+        // Update UI immediately
+        if (e.target.checked) {
+          subtaskItem.classList.add('checked');
+        } else {
+          subtaskItem.classList.remove('checked');
+        }
+        
+        // Update task in storage
+        updateTask(task.id, index, e.target.checked);
+      });
+    });
 
     taskCard.querySelector('.delete-btn').addEventListener('click', () => {
       deleteTask(task.id);
@@ -151,6 +200,27 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     tasksList.prepend(taskCard);
+  }
+
+  function updateTask(taskId, subtaskIndex, checked) {
+    chrome.storage.local.get(['tasks'], (result) => {
+      const tasks = result.tasks || [];
+      const taskIndex = tasks.findIndex(t => t.id === taskId);
+      if (taskIndex !== -1) {
+        // Ensure subtasks are in the correct format
+        if (!tasks[taskIndex].subtasks[subtaskIndex] || typeof tasks[taskIndex].subtasks[subtaskIndex] === 'string') {
+          tasks[taskIndex].subtasks[subtaskIndex] = {
+            text: typeof tasks[taskIndex].subtasks[subtaskIndex] === 'string' 
+              ? tasks[taskIndex].subtasks[subtaskIndex] 
+              : tasks[taskIndex].subtasks[subtaskIndex].text || '',
+            checked: checked
+          };
+        } else {
+          tasks[taskIndex].subtasks[subtaskIndex].checked = checked;
+        }
+        chrome.storage.local.set({ tasks });
+      }
+    });
   }
 
   function deleteTask(id) {

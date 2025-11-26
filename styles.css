@@ -163,27 +163,48 @@ button:active {
 
 .subtasks {
   list-style: none;
-  padding-left: 5px;
+  padding-left: 0;
 }
 
-.subtasks li {
-  position: relative;
-  padding: 6px 0 6px 20px;
-  font-size: 0.85rem;
-  color: #000;
+.subtask-item {
+  padding: 8px 0;
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  transition: opacity 0.2s ease;
 }
 
-.subtasks li:last-child {
+.subtask-item:last-child {
   border-bottom: none;
 }
 
-.subtasks li::before {
-  content: '→';
-  position: absolute;
-  left: 0;
-  color: #5b2d82;
-  font-weight: bold;
+.subtask-label {
+  display: flex;
+  align-items: flex-start;
+  cursor: pointer;
+  user-select: none;
+}
+
+.subtask-checkbox {
+  width: 18px;
+  height: 18px;
+  margin-right: 10px;
+  margin-top: 2px;
+  cursor: pointer;
+  accent-color: #5b2d82;
+  flex-shrink: 0;
+}
+
+.subtask-text {
+  font-size: 0.85rem;
+  color: #000;
+  line-height: 1.4;
+  flex: 1;
+  transition: all 0.2s ease;
+}
+
+.subtask-item.checked .subtask-text {
+  text-decoration: line-through;
+  opacity: 0.6;
+  color: #666;
 }
 
 .empty-state {
