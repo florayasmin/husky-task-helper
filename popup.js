@@ -3,14 +3,42 @@ document.addEventListener('DOMContentLoaded', () => {
   const addTaskBtn = document.getElementById('addTask');
   const tasksList = document.getElementById('tasksList');
   const currentDate = document.getElementById('currentDate');
+  const prevDayBtn = document.getElementById('prevDay');
+  const nextDayBtn = document.getElementById('nextDay');
 
-  // Display current date
+  // Track selected date (starts at today)
   const today = new Date();
-  currentDate.textContent = today.toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
+  let selectedDate = new Date(today);
+  
+  // Display current date
+  function updateDateDisplay() {
+    const isToday = selectedDate.toDateString() === today.toDateString();
+    currentDate.textContent = selectedDate.toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+    
+    // Add "Today" indicator if viewing today
+    if (isToday) {
+      currentDate.textContent += ' (Today)';
+    }
+  }
+
+  updateDateDisplay();
+
+  // Navigation handlers
+  prevDayBtn.addEventListener('click', () => {
+    selectedDate.setDate(selectedDate.getDate() - 1);
+    updateDateDisplay();
+    loadTasks();
+  });
+
+  nextDayBtn.addEventListener('click', () => {
+    selectedDate.setDate(selectedDate.getDate() + 1);
+    updateDateDisplay();
+    loadTasks();
   });
 
   // Load tasks from storage
@@ -34,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
         id: Date.now(),
         title: taskText,
         subtasks: subtasksWithState,
-        date: today.toDateString()
+        date: selectedDate.toDateString() // Save to the currently selected date
       };
       saveTask(task);
       renderTask(task);
@@ -105,27 +133,28 @@ document.addEventListener('DOMContentLoaded', () => {
   function loadTasks() {
     chrome.storage.local.get(['tasks'], (result) => {
       const tasks = result.tasks || [];
-      const todayStr = today.toDateString();
+      const selectedDateStr = selectedDate.toDateString();
       
-      const todayTasks = tasks.filter(t => t.date === todayStr);
+      const dateTasks = tasks.filter(t => t.date === selectedDateStr);
       
       // Normalize legacy subtasks format
-      todayTasks.forEach(task => {
+      dateTasks.forEach(task => {
         if (task.subtasks && task.subtasks.length > 0 && typeof task.subtasks[0] === 'string') {
           task.subtasks = task.subtasks.map(text => ({ text: text, checked: false }));
         }
       });
       
-      if (todayTasks.length === 0) {
+      if (dateTasks.length === 0) {
+        const isToday = selectedDate.toDateString() === today.toDateString();
         tasksList.innerHTML = `
           <div class="empty-state">
             <span>📝</span>
-            <p>No tasks for today yet.<br>Add one above to get started!</p>
+            <p>No tasks ${isToday ? 'for today' : 'for this day'} yet.<br>${isToday ? 'Add one above to get started!' : ''}</p>
           </div>
         `;
       } else {
         tasksList.innerHTML = '';
-        todayTasks.forEach(task => renderTask(task));
+        dateTasks.forEach(task => renderTask(task));
       }
     });
   }
@@ -190,10 +219,11 @@ document.addEventListener('DOMContentLoaded', () => {
       taskCard.remove();
       
       if (tasksList.children.length === 0) {
+        const isToday = selectedDate.toDateString() === today.toDateString();
         tasksList.innerHTML = `
           <div class="empty-state">
             <span>📝</span>
-            <p>No tasks for today yet.<br>Add one above to get started!</p>
+            <p>No tasks ${isToday ? 'for today' : 'for this day'} yet.<br>${isToday ? 'Add one above to get started!' : ''}</p>
           </div>
         `;
       }
