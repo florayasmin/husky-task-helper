@@ -1,6 +1,6 @@
 # Husky Task Helper
 
-A Chrome extension that helps you break down tasks into manageable subtasks using Claude AI!
+A Chrome extension that helps you break down tasks into manageable subtasks using Claude AI ✴️
 
 ## Features
 
