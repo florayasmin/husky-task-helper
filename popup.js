@@ -180,21 +180,39 @@ document.addEventListener('DOMContentLoaded', () => {
       const checkedClass = st.checked ? 'checked' : '';
       return `
         <li class="subtask-item ${checkedClass}">
-          <label class="subtask-label">
-            <input type="checkbox" class="subtask-checkbox" data-index="${index}" ${checked}>
-            <span class="subtask-text">${st.text}</span>
-          </label>
+          <div class="subtask-label">
+            <input type="checkbox" class="subtask-checkbox" data-index="${index}" ${checked} id="checkbox-${task.id}-${index}">
+            <span class="subtask-text" contenteditable="true" data-index="${index}">${st.text}</span>
+          </div>
         </li>
       `;
     }).join('');
 
     taskCard.innerHTML = `
       <div class="task-header">
-        <span class="task-title">${task.title}</span>
+        <span class="task-title" contenteditable="true">${task.title}</span>
         <button class="delete-btn">Remove</button>
       </div>
       <ul class="subtasks">${subtasksHtml}</ul>
     `;
+
+    // Add task title editing
+    const taskTitleElement = taskCard.querySelector('.task-title');
+    taskTitleElement.addEventListener('blur', () => {
+      const newTitle = taskTitleElement.textContent.trim();
+      if (newTitle && newTitle !== task.title) {
+        updateTaskTitle(task.id, newTitle);
+      } else if (!newTitle) {
+        taskTitleElement.textContent = task.title; // Restore if empty
+      }
+    });
+    
+    taskTitleElement.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        taskTitleElement.blur();
+      }
+    });
 
     // Add checkbox event listeners
     taskCard.querySelectorAll('.subtask-checkbox').forEach(checkbox => {
@@ -211,6 +229,41 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Update task in storage
         updateTask(task.id, index, e.target.checked);
+      });
+    });
+
+    // Add subtask text editing
+    taskCard.querySelectorAll('.subtask-text').forEach(subtaskText => {
+      const originalText = subtaskText.textContent;
+      
+      // Prevent checkbox toggle when clicking to edit text
+      subtaskText.addEventListener('mousedown', (e) => {
+        e.stopPropagation();
+      });
+      
+      subtaskText.addEventListener('click', (e) => {
+        // Only focus if not already focused (to allow checkbox clicks)
+        if (document.activeElement !== subtaskText) {
+          e.stopPropagation();
+        }
+      });
+      
+      subtaskText.addEventListener('blur', () => {
+        const newText = subtaskText.textContent.trim();
+        const index = parseInt(subtaskText.dataset.index);
+        
+        if (newText && newText !== originalText) {
+          updateSubtaskText(task.id, index, newText);
+        } else if (!newText) {
+          subtaskText.textContent = originalText; // Restore if empty
+        }
+      });
+      
+      subtaskText.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          subtaskText.blur();
+        }
       });
     });
 
@@ -247,6 +300,36 @@ document.addEventListener('DOMContentLoaded', () => {
           };
         } else {
           tasks[taskIndex].subtasks[subtaskIndex].checked = checked;
+        }
+        chrome.storage.local.set({ tasks });
+      }
+    });
+  }
+
+  function updateTaskTitle(taskId, newTitle) {
+    chrome.storage.local.get(['tasks'], (result) => {
+      const tasks = result.tasks || [];
+      const taskIndex = tasks.findIndex(t => t.id === taskId);
+      if (taskIndex !== -1) {
+        tasks[taskIndex].title = newTitle;
+        chrome.storage.local.set({ tasks });
+      }
+    });
+  }
+
+  function updateSubtaskText(taskId, subtaskIndex, newText) {
+    chrome.storage.local.get(['tasks'], (result) => {
+      const tasks = result.tasks || [];
+      const taskIndex = tasks.findIndex(t => t.id === taskId);
+      if (taskIndex !== -1) {
+        // Ensure subtasks are in the correct format
+        if (!tasks[taskIndex].subtasks[subtaskIndex] || typeof tasks[taskIndex].subtasks[subtaskIndex] === 'string') {
+          tasks[taskIndex].subtasks[subtaskIndex] = {
+            text: newText,
+            checked: false
+          };
+        } else {
+          tasks[taskIndex].subtasks[subtaskIndex].text = newText;
         }
         chrome.storage.local.set({ tasks });
       }
