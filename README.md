@@ -1,7 +1,6 @@
 # Husky Task Helper
 
 A Chrome extension that helps you break down tasks into manageable subtasks using Claude AI ✴️
-![our husky mascot](husky.png)
 
 ## Features
 
@@ -53,3 +52,6 @@ These preferences will automatically populate the context field when you create 
 ## Privacy
 
 Your API key and tasks are stored locally in your browser. No data is sent to any server except for the Anthropic API to generate subtasks.
+
+Enjoy! Woof!
+![our husky mascot](husky.png)
