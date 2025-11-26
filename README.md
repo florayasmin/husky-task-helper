@@ -54,4 +54,5 @@ These preferences will automatically populate the context field when you create 
 Your API key and tasks are stored locally in your browser. No data is sent to any server except for the Anthropic API to generate subtasks.
 
 Enjoy! Woof!
+Our wonderful husky is drawn by Enrica! :)
 ![our husky mascot](husky.png)
