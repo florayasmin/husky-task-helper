@@ -18,10 +18,63 @@
         </div>
         <button class="nav-arrow" id="nextDay">→</button>
       </div>
+      <button class="settings-btn" id="settingsBtn" title="Preferences">⚙️</button>
     </header>
+    
+    <div id="settingsModal" class="settings-modal" style="display: none;">
+      <div class="settings-content">
+        <div class="settings-header">
+          <h2>Task Preferences</h2>
+          <button class="close-settings-btn" id="closeSettingsBtn">×</button>
+        </div>
+        <p class="settings-description">Set your default preferences for each task type. These will be automatically applied when creating similar tasks.</p>
+        
+        <div class="preferences-section">
+          <div class="preference-group">
+            <label for="studyPrefs">Study Tasks:</label>
+            <textarea id="studyPrefs" class="preference-input" placeholder="e.g., I typically use flashcards, review notes, practice problems, and use spaced repetition"></textarea>
+          </div>
+          
+          <div class="preference-group">
+            <label for="codingPrefs">Coding Tasks:</label>
+            <textarea id="codingPrefs" class="preference-input" placeholder="e.g., I use test-driven development, code reviews, and documentation"></textarea>
+          </div>
+          
+          <div class="preference-group">
+            <label for="writingPrefs">Writing Tasks:</label>
+            <textarea id="writingPrefs" class="preference-input" placeholder="e.g., I start with an outline, do research first, then write drafts"></textarea>
+          </div>
+          
+          <div class="preference-group">
+            <label for="researchPrefs">Research Tasks:</label>
+            <textarea id="researchPrefs" class="preference-input" placeholder="e.g., I use academic databases, take notes, and create summaries"></textarea>
+          </div>
+          
+          <div class="preference-group">
+            <label for="planningPrefs">Planning Tasks:</label>
+            <textarea id="planningPrefs" class="preference-input" placeholder="e.g., I break down into phases, set milestones, and track progress"></textarea>
+          </div>
+          
+          <div class="preference-group">
+            <label for="creativePrefs">Creative Tasks:</label>
+            <textarea id="creativePrefs" class="preference-input" placeholder="e.g., I start with sketches, gather inspiration, then refine"></textarea>
+          </div>
+        </div>
+        
+        <div class="settings-actions">
+          <button class="save-preferences-btn" id="savePreferencesBtn">Save Preferences</button>
+          <button class="clear-preferences-btn" id="clearPreferencesBtn">Clear All</button>
+        </div>
+      </div>
+    </div>
     
     <div class="input-section">
       <textarea id="taskInput" placeholder="hi there! enter a task you need help with (e.g., 'write research paper on climate change')"></textarea>
+      <div id="contextSection" class="context-section" style="display: none;">
+        <label for="contextInput" id="contextLabel">Additional context (optional):</label>
+        <textarea id="contextInput" placeholder="Provide any additional context to help generate better subtasks..."></textarea>
+        <p class="context-hint" id="contextHint"></p>
+      </div>
       <button id="addTask">break it down</button>
     </div>
     
